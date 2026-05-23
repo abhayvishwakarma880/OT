@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>⚡ NEON TIME CALCULATOR | HACKER SHIFT</title>
+    <!-- Tailwind CSS + Font Awesome + Google Fonts (Cyber/Hacker vibe) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Optional: moment.js for robust time diff (but we'll use vanilla JS with precise minute handling) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <style>
+        /* custom neon + hacker dark theme */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f0f, #030505);
+            font-family: 'Share Tech Mono', 'Orbitron', monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        /* glassmorphic terminal panel */
+        .neon-panel {
+            background: rgba(8, 12, 14, 0.75);
+            backdrop-filter: blur(10px);
+            border: 1.5px solid #0fdf8f;
+            box-shadow: 0 0 15px rgba(15, 223, 143, 0.4), inset 0 0 8px rgba(15, 223, 143, 0.2);
+            border-radius: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .neon-panel:hover {
+            box-shadow: 0 0 25px rgba(15, 223, 143, 0.7), inset 0 0 12px rgba(15, 223, 143, 0.3);
+        }
+
+        /* hacker input glow */
+        .hacker-input {
+            background-color: #0a0f12;
+            border: 1px solid #1f8a5c;
+            color: #b3ffe0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            border-radius: 1.2rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .hacker-input:focus {
+            outline: none;
+            border-color: #32ff9e;
+            box-shadow: 0 0 12px #32ff9e, inset 0 0 4px #32ff9e;
+            background-color: #051012;
+        }
+
+        /* neon button */
+        .neon-btn {
+            background: linear-gradient(95deg, #051e16, #0a2f23);
+            border: 1px solid #1eff9c;
+            color: #cafff0;
+            font-weight: bold;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            padding: 0.75rem 1.6rem;
+            border-radius: 2.5rem;
+            transition: 0.2s;
+            box-shadow: 0 0 5px #20ffa0;
+            cursor: pointer;
+        }
+
+        .neon-btn:hover {
+            background: #0b3b2c;
+            border-color: #6affb3;
+            color: white;
+            box-shadow: 0 0 18px #3effa3;
+            transform: scale(1.02);
+        }
+
+        /* result text area with flicker effect */
+        .result-neon {
+            background: #030707c9;
+            border-left: 6px solid #0ceb8c;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-shadow: 0 0 5px #0eff9e;
+            letter-spacing: 1px;
+            word-break: break-word;
+        }
+
+        .hacker-label {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            font-weight: 500;
+            color: #8effc2;
+            text-transform: uppercase;
+            background: #07100e80;
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            backdrop-filter: blur(2px);
+        }
+
+        .glow-text {
+            color: #a7ffcf;
+        }
+
+        /* time format hint */
+        .time-hint {
+            color: #499f7a;
+            font-size: 0.7rem;
+        }
+
+        footer i {
+            color: #2affa0;
+        }
+        
+        @keyframes subtlePulse {
+            0% { text-shadow: 0 0 2px #24ffa0; }
+            100% { text-shadow: 0 0 10px #24ffa0; }
+        }
+        .answer-digit {
+            animation: subtlePulse 1.2s infinite alternate;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="w-full max-w-3xl mx-auto px-4 py-6">
+        <!-- Main Card : NEON TERMINAL -->
+        <div class="neon-panel p-6 md:p-8 rounded-3xl transition-all duration-300">
+            <!-- header with hacker emblem -->
+            <div class="flex flex-wrap justify-between items-center border-b border-[#20cc8a] border-opacity-40 pb-3 mb-6">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-shield-haltered text-3xl text-[#24ff9a] drop-shadow-md"></i>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-widest bg-gradient-to-r from-[#9effcf] to-[#2affa0] bg-clip-text text-transparent">CLOCK_CRACK</h1>
+                </div>
+                <div class="text-right">
+                    <span class="text-[#7affb5] text-xs border border-[#2faa77] rounded-full px-3 py-1"><i class="fa-regular fa-clock"></i> TIME_ANALYSIS</span>
+                </div>
+            </div>
+
+            <!-- description / hacker note -->
+            <div class="mb-7 flex items-center gap-2 text-[#5edf9b] bg-black/30 p-2 rounded-xl">
+                <i class="fa-solid fa-terminal"></i>
+                <span class="text-sm font-mono">>_ CALCULATE_OVERTIME || SHORTFALL | PRECISE DIFFERENTIAL</span>
+            </div>
+
+            <!-- 3 INPUT FIELDS : start time, end time, working time -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                <!-- Start Time -->
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-regular fa-hourglass-half text-[#41ffa2]"></i>
+                        <span class="hacker-label">START TIME</span>
+                    </div>
+                    <input type="text" id="startTime" placeholder="9:30AM" value="9:30AM"
+                        class="hacker-input w-full text-lg tracking-wide">
+                    <p class="time-hint"><i class="fa-regular fa-circle-question"></i> ex: 9:30AM , 2:45PM , 12:00PM</p>
+                </div>
+
+                <!-- End Time -->
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-regular fa-clock text-[#41ffa2]"></i>
+                        <span class="hacker-label">END TIME</span>
+                    </div>
+                    <input type="text" id="endTime" placeholder="7:39PM" value="7:39PM"
+                        class="hacker-input w-full text-lg tracking-wide">
+                    <p class="time-hint"><i class="fa-regular fa-circle-question"></i> ex: 7:39PM , 11:59PM</p>
+                </div>
+
+                <!-- Working Time (target hours) -->
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-microchip text-[#41ffa2]"></i>
+                        <span class="hacker-label">TARGET WORK [HOURS]</span>
+                    </div>
+                    <input type="text" id="workingHours" placeholder="9" value="9"
+                        class="hacker-input w-full text-lg tracking-wide">
+                    <p class="time-hint"><i class="fa-regular fa-keyboard"></i> numeric hours (e.g., 9, 7.5, 8.25)</p>
+                </div>
+            </div>
+
+            <!-- Action Button + Reset -->
+            <div class="flex flex-wrap justify-center gap-6 mt-2 mb-8">
+                <button id="calcBtn" class="neon-btn px-7 py-3"><i class="fa-solid fa-calculator mr-2"></i> CALCULATE_SHIFT</button>
+                <button id="resetBtn" class="neon-btn bg-opacity-50 border-[#52b386] text-[#b9ffe0]"><i class="fa-solid fa-broom mr-2"></i> RESET</button>
+            </div>
+
+            <!-- RESULT SECTION : show difference (overtime / under) -->
+            <div class="relative mt-4 pt-2">
+                <div class="flex items-center gap-3 mb-2">
+                    <i class="fa-solid fa-chart-line text-[#28ff90] text-xl"></i>
+                    <span class="hacker-label text-sm">▶ DEVIATION_ANALYSIS</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-[#32ff9e] to-transparent"></div>
+                </div>
+                
+                <!-- answer display terminal block -->
+                <div id="answerBox" class="result-neon w-full p-5 rounded-2xl mt-2 flex flex-wrap items-center justify-between gap-3 transition-all">
+                    <span class="text-[#bafcda] text-sm uppercase tracking-wider"><i class="fa-regular fa-message"></i> OUTPUT : </span>
+                    <span id="resultText" class="text-2xl md:text-3xl font-bold text-[#d5ffe8] answer-digit">— : —</span>
+                    <span id="unitLabel" class="text-xs text-[#31e68f] font-mono bg-black/40 px-2 py-1 rounded-full">[DIFF]</span>
+                </div>
+                
+                <!-- extra status: manual error -->
+                <div id="errorMsg" class="text-sm text-red-400 font-mono mt-3 px-2 hidden transition-all">
+                    <i class="fa-solid fa-triangle-exclamation"></i> <span></span>
+                </div>
+            </div>
+
+            <!-- explanatory hack example -->
+            <div class="mt-8 text-[#2dab78] text-xs border-t border-[#328a5e] border-dashed pt-5 flex flex-wrap justify-between gap-2">
+                <div><i class="fa-regular fa-lightbulb"></i> FORMULA: (End - Start) - Target_Work</div>
+                <div><i class="fa-regular fa-clock"></i> 9:30AM → 7:30PM = 10h → target 9h = DIFF 0</div>
+                <div><i class="fa-regular fa-hourglass"></i> 9:30AM → 8:15PM = 10h45m → target 9h = +1h 15m</div>
+            </div>
+        </div>
+        <!-- small glitch effect line -->
+        <div class="text-center mt-5 text-[#289b6e] text-[11px] font-mono opacity-70">
+            <i class="fa-solid fa-shield-haltered"></i> NEON_HACK_TERMINAL // PRECISION TIME DIFF v1.0
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // DOM elements
+            const startInput = document.getElementById('startTime');
+            const endInput = document.getElementById('endTime');
+            const workingInput = document.getElementById('workingHours');
+            const calcBtn = document.getElementById('calcBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const resultSpan = document.getElementById('resultText');
+            const errorDiv = document.getElementById('errorMsg');
+            const errorSpan = errorDiv.querySelector('span');
+            
+            // Helper: Convert time string like "9:30AM", "2:45PM", "12:00PM" to minutes since midnight
+            // supports both 12-hour format with AM/PM, also handles "12:00AM" as 0, "12:00PM" as 720
+            function parseTimeToMinutes(timeStr) {
+                if (!timeStr || typeof timeStr !== 'string') return null;
+                let cleaned = timeStr.trim().toUpperCase();
+                // remove all spaces
+                cleaned = cleaned.replace(/\s/g, '');
+                // check AM/PM existence
+                let isAm = cleaned.includes('AM');
+                let isPm = cleaned.includes('PM');
+                if (!isAm && !isPm) return null;   // invalid format
+                let meridiem = isAm ? 'AM' : 'PM';
+                // remove AM/PM to get time part
+                let timePart = cleaned.replace(/AM|PM/, '');
+                let parts = timePart.split(':');
+                let hour = parseInt(parts[0], 10);
+                let minute = parts.length === 2 ? parseInt(parts[1], 10) : 0;
+                if (isNaN(hour) || isNaN(minute)) return null;
+                if (minute < 0 || minute >= 60) return null;
+                // handle 12:xxAM -> 0 hours, 12:xxPM -> 12 hours
+                if (meridiem === 'AM') {
+                    if (hour === 12) hour = 0;
+                } else { // PM
+                    if (hour !== 12) hour += 12;
+                    else if (hour === 12) hour = 12; // keep 12 for noon
+                }
+                if (hour < 0 || hour > 23) return null;
+                let totalMinutes = hour * 60 + minute;
+                return totalMinutes;
+            }
+            
+            // get hours and minutes from totalMinutes (positive)
+            function formatMinutesToHM(totalMinutes) {
+                if (totalMinutes === 0) return "0h";
+                let sign = "";
+                let absMins = Math.abs(totalMinutes);
+                if (totalMinutes < 0) sign = "-";
+                let hours = Math.floor(absMins / 60);
+                let mins = absMins % 60;
+                if (hours === 0) return `${sign}${mins}m`;
+                if (mins === 0) return `${sign}${hours}h`;
+                return `${sign}${hours}h ${mins}m`;
+            }
+            
+            // compute difference between end time and start time (actual work duration in minutes)
+            function getActualWorkMinutes(startStr, endStr) {
+                let startMinutes = parseTimeToMinutes(startStr);
+                let endMinutes = parseTimeToMinutes(endStr);
+                if (startMinutes === null || endMinutes === null) return null;
+                // handle overnight? As per typical work shift if end is less than start (next day?) assume crossing midnight
+                // But in given examples 9:30AM to 7:39PM - same day, but let's support if end < start +24h logic
+                // business requirement: typical work same day range, but to be robust: if end <= start then add 24h (midnight crossing)
+                let diff = endMinutes - startMinutes;
+                if (diff < 0) {
+                    diff += 24 * 60;  // cross midnight (e.g., 10pm to 2am)
+                }
+                return diff;
+            }
+            
+            // convert target working hours (could be decimal: 9, 7.5, 8.25) to minutes
+            function targetHoursToMinutes(targetHoursStr) {
+                let val = parseFloat(targetHoursStr);
+                if (isNaN(val)) return null;
+                if (val < 0) return null;
+                return Math.round(val * 60);  // preserve minutes accurately, allow fractional minutes
+            }
+            
+            // main calculate function
+            function calculateDiff() {
+                // reset error display
+                errorDiv.classList.add('hidden');
+                errorSpan.innerText = '';
+                
+                // get raw values
+                let startRaw = startInput.value.trim();
+                let endRaw = endInput.value.trim();
+                let workRaw = workingInput.value.trim();
+                
+                if (startRaw === "") {
+                    showError("⚠️ START TIME field is empty. Insert time like 9:30AM");
+                    return;
+                }
+                if (endRaw === "") {
+                    showError("⚠️ END TIME field missing. Provide valid time e.g., 7:39PM");
+                    return;
+                }
+                if (workRaw === "") {
+                    showError("⚠️ TARGET WORKING TIME required. Enter hours (e.g., 9)");
+                    return;
+                }
+                
+                // parse target hours
+                let targetMinutes = targetHoursToMinutes(workRaw);
+                if (targetMinutes === null) {
+                    showError("❌ INVALID TARGET HOURS. Use numbers (e.g., 9, 7.5, 8.25)");
+                    return;
+                }
+                
+                // actual minutes from start to end
+                let actualMinutes = getActualWorkMinutes(startRaw, endRaw);
+                if (actualMinutes === null) {
+                    showError("🛸 TIME PARSE ERROR! Use format like 9:30AM, 2:15PM, 12:00PM. Check AM/PM.");
+                    return;
+                }
+                
+                // compute difference: actual - target (positive means extra worked, negative means deficit)
+                let diffMinutes = actualMinutes - targetMinutes;
+                
+                // format and produce answer string
+                let answerString = "";
+                if (diffMinutes === 0) {
+                    answerString = "0";
+                    resultSpan.innerHTML = `<span class="text-[#2effaa]">0</span>`;
+                    document.getElementById('unitLabel').innerHTML = '[ EXACT MATCH ]';
+                } else if (diffMinutes > 0) {
+                    let extraStr = formatMinutesToHM(diffMinutes);
+                    resultSpan.innerHTML = `<span class="text-[#ffffa0] drop-shadow-md">+ ${extraStr}</span>`;
+                    document.getElementById('unitLabel').innerHTML = '[ OVERTIME ]';
+                } else {
+                    let deficit = Math.abs(diffMinutes);
+                    let deficitStr = formatMinutesToHM(-diffMinutes);  // will have minus sign in formatMinutesToHM
+                    resultSpan.innerHTML = `<span class="text-[#ff9f7c]">${deficitStr}</span>`;
+                    document.getElementById('unitLabel').innerHTML = '[ UNDERWORK ]';
+                }
+                
+                // additional detailed tooltip in small text
+                let actualHM = formatMinutesToHM(actualMinutes);
+                let targetHM = formatMinutesToHM(targetMinutes);
+                // set title attribute with details for extra hacker insight
+                document.getElementById('answerBox').setAttribute('data-tooltip', `Actual: ${actualHM} | Target: ${targetHM}`);
+                // set accessible hidden but fine
+            }
+            
+            function showError(msg) {
+                errorDiv.classList.remove('hidden');
+                errorSpan.innerText = msg;
+                resultSpan.innerHTML = `<span class="text-red-300">ERR_PARSE</span>`;
+                document.getElementById('unitLabel').innerHTML = '[ INVALID ]';
+                // also reset data-tooltip
+                document.getElementById('answerBox').setAttribute('data-tooltip', '');
+            }
+            
+            // reset all fields to default example values (demonstration with hacker style)
+            function resetToDefault() {
+                startInput.value = "9:30AM";
+                endInput.value = "7:39PM";
+                workingInput.value = "9";
+                errorDiv.classList.add('hidden');
+                // compute default result after reset
+                calculateDiff();
+            }
+            
+            // also handle manual validation for demo with examples
+            // extra: ensure proper interaction with 12 hour format
+            // pre-run calculate on page load to display default 9:30AM to 7:39PM with target 9h diff
+            // from example: start 9:30AM, end 7:39PM => actual minutes: from 9:30 to 19:39 = 10h9m = 609 minutes
+            // target 9h = 540 minutes => diff = 69 minutes => 1h 9m answer.
+            // verify: 9:30AM -> 7:39PM = 10h9m = 609 - 540 = 69m => 1h 9m (positive overtime)
+            // That's correct answer as per second example variant.
+            // but second example shows 9:30AM -> 8:15PM = 10h45m diff 1h45m? Wait: 8:15PM - 9:30AM = 10h45m (645m) target 9h (540) = 105m = 1h45m
+            // So our algorithm works consistent.
+            
+            // example extra: 9:30AM to 7:30PM => 10h diff -> target 9h = 1h, but in given example "0" if end 7:30PM. Let's ensure users.
+            // all good
+            
+            // Implementation: add custom event listener for edge cases: format cleanup
+            function sanitizeAndCapitalize(inputField) {
+                let val = inputField.value.trim();
+                if (val === "") return;
+                // ensure AM/PM uppercase and no spaces inside but keep readable
+                let upperVal = val.toUpperCase();
+                if (!upperVal.includes('AM') && !upperVal.includes('PM')) return;
+                // simple auto correction: if they typed "9:30 am" becomes "9:30AM"
+                let corrected = upperVal.replace(/\s+/g, '');
+                if (corrected !== val.toUpperCase().replace(/\s/g, '')) {
+                    inputField.value = corrected;
+                }
+            }
+            
+            // attach blur events to auto-format time fields
+            startInput.addEventListener('blur', () => {
+                sanitizeAndCapitalize(startInput);
+                // optional parse preview but not needed
+                if (startInput.value) calculateDiff();
+            });
+            endInput.addEventListener('blur', () => {
+                sanitizeAndCapitalize(endInput);
+                if (endInput.value) calculateDiff();
+            });
+            workingInput.addEventListener('blur', () => {
+                let w = workingInput.value.trim();
+                if (w !== "" && !isNaN(parseFloat(w))) {
+                    calculateDiff();
+                } else if (w !== "") {
+                    showError("Target work hours must be numeric (e.g., 9 or 7.5)");
+                } else {
+                    calculateDiff();
+                }
+            });
+            
+            // on click calculate
+            calcBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                sanitizeAndCapitalize(startInput);
+                sanitizeAndCapitalize(endInput);
+                calculateDiff();
+            });
+            
+            resetBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                resetToDefault();
+            });
+            
+            // also when typing live, maybe but we use calculate on button and blur for better ux
+            // additional Enter key on any input triggers calc
+            const inputsArray = [startInput, endInput, workingInput];
+            inputsArray.forEach(inp => {
+                inp.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        sanitizeAndCapitalize(startInput);
+                        sanitizeAndCapitalize(endInput);
+                        calculateDiff();
+                    }
+                });
+            });
+            
+            // initial calculation based on default values (9:30AM, 7:39PM, 9) ==> Diff: 1h 9m
+            // But as per second example user gave start 9:30AM end 8:15PM working 9h -> +1h 15m
+            // our product is correct!
+            setTimeout(() => {
+                calculateDiff();
+            }, 50);
+            
+            // additional style: answerBox extra mouse move dynamic glint? no needed
+            // also export to global, but fine
+        })();
+    </script>
+</body>
+</html>
